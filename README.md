@@ -1,100 +1,115 @@
 # stock-analysis
-Sub CHAllStocksAnalysis()
-    
+Sub Challenge2()
     yearValue = InputBox("What year would you like to run the analysis on?")
 
-    Worksheets("Refactor existing code").Activate
-
-    Range("A1").Value = "All Stocks (" + yearValue + ")"
-
-    'Create a header row
+    Worksheets("Challenge2_All Stocks Anlysis").Activate
+    
+    Range("A1").Value = "Stocks analysis for (" + yearValue + ")"
+    
+    'STEP 1:Creating header rows
     Cells(3, 1).Value = "Ticker"
     Cells(3, 2).Value = "Total Daily Volume"
     Cells(3, 3).Value = "Return"
+    
+    'STEP 2:declaring all arrays
     Dim tickers(12) As String
-
-    tickers(0) = "AY"
-    tickers(1) = "CSIQ"
-    tickers(2) = "DQ"
-    tickers(3) = "ENPH"
-    tickers(4) = "FSLR"
-    tickers(5) = "HASI"
-    tickers(6) = "JKS"
-    tickers(7) = "RUN"
-    tickers(8) = "SEDG"
-    tickers(9) = "SPWR"
-    tickers(10) = "TERP"
-    tickers(11) = "VSLR"
-
+    Dim volume(12) As String
+    Dim startPrice(12) As String
+    Dim endPrice(12) As String
+    
+    
+    'STEP 3:creating index variable
+    Dim tickerIndex As Integer
 
     Worksheets(yearValue).Activate
-
-    'get the number of rows to loop over
     RowCount = Cells(Rows.Count, "A").End(xlUp).Row
 
-    Dim startingPrice As Single
-    Dim endingPrice As Single
-
-    For i = 0 To 11
-
-        ticker = tickers(i)
-        TotalVolume = 0
-
+    'STEP 4:creating outer loop for index from 0 to 11
+    tickerIndex = 0
+    Worksheets(yearValue).Activate
+    
+    For tickerIndex = 0 To 11
+        
+        
+    'STEP 5:creating loop for storing all stock data for selected year
+        
         Worksheets(yearValue).Activate
-
-        'loop over all the rows
-        For J = 2 To RowCount
-
-            If Cells(J, 1).Value = ticker Then
-
-                'increase totalVolume by the value in the current row
-                TotalVolume = TotalVolume + Cells(J, 8).Value
-
+        For j = 2 To RowCount
+            
+     'STEP 6:Fetch ticker name and start price for each and store them in arrays
+            
+            If Cells(j, 1).Value <> Cells(j - 1, 1).Value Then
+                tickers(tickerIndex) = Cells(j, 1).Value
+                startPrice(tickerIndex) = Cells(j, 6).Value
+            
             End If
+                
+      'STEP 7:creating nested loop for feteching TotalVolume for each volume of array
+                
+                Worksheets(yearValue).Activate
+                    TotalVolume = 0
+                    For x = 2 To RowCount
+                        If Cells(x, 1).Value = tickers(tickerIndex) Then
+                            TotalVolume = TotalVolume + Cells(x, 8).Value
+                        End If
+                    Next x
 
-            If Cells(J - 1, 1).Value <> ticker And Cells(J, 1).Value = ticker Then
-
-                startingPrice = Cells(J, 6).Value
-
+                    volume(tickerIndex) = TotalVolume
+            
+            'STEP 8:fetching end price and storing in array
+            
+            If Cells(j + 1, 1).Value <> Cells(j, 1).Value Then
+                endPrice(tickerIndex) = Cells(j, 6).Value
+                
+                'Trigger tickerIndex for next loop
+                tickerIndex = tickerIndex + 1
+                
             End If
-
-            If Cells(J + 1, 1).Value <> ticker And Cells(J, 1).Value = ticker Then
-
-                endingPrice = Cells(J, 6).Value
-
-            End If
-
-        Next J
-
-        Worksheets("All Stocks Analysis").Activate
-        Cells(4 + i, 1).Value = ticker
-        Cells(4 + i, 2).Value = TotalVolume
-        Cells(4 + i, 3).Value = endingPrice / startingPrice - 1
-
+            
+        Next j
+        
+    Next tickerIndex
+    
+    'STEP 9: storing all fetched information from array and place it in below worksheet
+    Worksheets("Challenge2_All Stocks Anlysis").Activate
+    For i = 0 To 11
+        
+        Cells(i + 4, 1).Value = tickers(i)
+        Cells(i + 4, 3).Value = endPrice(i) / startPrice(i) - 1
+        Cells(4 + i, 2).Value = volume(i)
+    
     Next i
-
-    'Formatting
-    Worksheets("All Stocks Analysis").Activate
-    Range("A3:C3").Font.FontStyle = "Bold"
-    Range("A3:C3").Borders(xlEdgeBottom).LineStyle = xlContinuous
-    Range("B4:B15").NumberFormat = "#,##0"
-    Range("C4:C15").NumberFormat = "0.0%"
-    Columns("B").AutoFit
+                
+    'STEP 10: formatting
+    Worksheets("Challenge2_All Stocks Anlysis").Activate
+        Range("A3:C3").Font.Bold = True
+        Range("A1").Font.FontStyle = "Bold"
+        Range("A3:C3").Borders(xlEdgeBottom).LineStyle = xlContinuous
+        Range("B4:B15").NumberFormat = "#,##0"
+        Range("C4:C15").NumberFormat = "0.0%"
+        Columns(2).AutoFit
+    
+    
+    'STEP 11: conditional/color formatting
+    Worksheets("Challenge2_All Stocks Anlysis").Activate
+    dataRowEnd = Cells(Rows.Count, "C").End(xlUp).Row
     dataRowStart = 4
-    dataRowEnd = 15
-    For i = dataRowStart To dataRowEnd
-
-        If Cells(i, 3) > 0 Then
-
-            Cells(i, 3).Interior.Color = vbGreen
-
+    
+    For y = dataRowStart To dataRowEnd
+        
+        If Cells(y, 3).Value > 0 Then
+           Cells(y, 3).Interior.Color = vbGreen
+        
+        ElseIf Cells(y, 3).Value < 0 Then
+               Cells(y, 3).Interior.Color = vbRed
+        
         Else
-
-            Cells(i, 3).Interior.Color = vbRed
-
+            Cells(y, 3).Interior.Color = xlNone
+       
         End If
-
-    Next i
+    
+    Next y
 
 
 End Sub
+
